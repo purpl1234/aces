@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Vocab v14.1 - Fix Edition</title>
+    <title>Forest Vocab v14.2 - Secure Sync</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
@@ -33,7 +33,7 @@
 
 <div class="container">
     <div class="card">
-        <h1>🌳 Forest Vocab v14.1 <span id="cloudStatus" style="font-size:0.8rem; color:var(--tech-blue);">☁️ 雲端已連線</span></h1>
+        <h1>🌳 Forest Vocab v14.2 <span id="cloudStatus" style="font-size:0.8rem; color:var(--tech-blue);">☁️ 雲端已連線</span></h1>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <label>單元名稱</label>
@@ -55,7 +55,7 @@
     <div id="mainEditor" class="card" style="display:none;">
         <h2 id="currentUnitTitle"></h2>
         <div style="margin-bottom:15px; display:flex; gap:10px;">
-            <button onclick="saveToCloud()">☁️ 同步雲端</button>
+            <button onclick="saveToCloud()">🔒 同步雲端 (需密碼)</button>
             <button style="background:var(--tech-neon); color:black" onclick="startQuiz()">📝 開始挑戰</button>
         </div>
         <table>
@@ -89,7 +89,7 @@
 </div>
 
 <script>
-// --- Firebase 配置 ---
+// --- 1. Firebase 配置 (請保留你的原設定) ---
 const firebaseConfig = {
     apiKey: "AIzaSyDFi2cajmGW9jr7dLgdV00GE0WdDkYT7Kw",
   authDomain: "my-vocab-c69f4.firebaseapp.com",
@@ -99,6 +99,9 @@ const firebaseConfig = {
   appId: "1:323452067288:web:77710f40657830b79ca6ad",
   measurementId: "G-1CF7ZXPX01"
 };
+
+// --- 2. 同步密碼設定 ---
+const MY_SYNC_PASSWORD = "1234"; 
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -119,21 +122,38 @@ async function loadFromCloud() {
     try {
         const snapshot = await db.collection("vocab_units").get();
         const cloudUnits = []; snapshot.forEach(doc => cloudUnits.push(doc.data()));
-        if (cloudUnits.length > 0) { units = cloudUnits; localStorage.setItem("forest_v14_data", JSON.stringify(units)); renderUnits(); }
-    } catch (e) { console.error(e); }
+        if (cloudUnits.length > 0) { 
+            units = cloudUnits; 
+            localStorage.setItem("forest_v14_data", JSON.stringify(units)); 
+            renderUnits(); 
+        }
+    } catch (e) { console.error("雲端載入失敗", e); }
 }
 
 async function saveToCloud() {
+    if (activeIndex === null) return;
+
+    // 密碼檢查邏輯
+    const password = prompt("請輸入同步密碼以覆蓋雲端資料：");
+    if (password !== MY_SYNC_PASSWORD) {
+        alert("密碼錯誤，同步取消。");
+        return;
+    }
+
     const unit = units[activeIndex];
     document.getElementById('cloudStatus').innerText = "⏳ 同步中...";
     try {
         await db.collection("vocab_units").doc(unit.name).set(unit);
         localStorage.setItem("forest_v14_data", JSON.stringify(units));
         document.getElementById('cloudStatus').innerText = "✅ 雲端已同步";
-        alert("儲存成功！");
-    } catch (e) { document.getElementById('cloudStatus').innerText = "❌ 同步失敗"; }
+        alert("雲端同步成功！");
+    } catch (e) { 
+        document.getElementById('cloudStatus').innerText = "❌ 同步失敗"; 
+        alert("同步發生錯誤，請確認 Firebase 權限。");
+    }
 }
 
+// 解析邏輯 (v12 修正版)
 function parseTextLogic(text) {
     const words = [];
     text.split('\n').forEach(line => {
@@ -160,7 +180,7 @@ function runManualParse() {
     renderUnits();
     document.getElementById('manualText').value = "";
     activeIndex = units.length - 1;
-    saveToCloud();
+    alert("本地已匯入，記得點擊『同步雲端』進行備份。");
 }
 
 function renderUnits() {
@@ -184,9 +204,19 @@ function renderTable() {
 }
 
 async function deleteUnit(name, i) {
-    if(confirm("確定刪除？")) { try { await db.collection("vocab_units").doc(name).delete(); } catch(e) {} units.splice(i,1); localStorage.setItem("forest_v14_data", JSON.stringify(units)); renderUnits(); document.getElementById('mainEditor').style.display='none'; }
+    const password = prompt("刪除單元也需要密碼：");
+    if (password !== MY_SYNC_PASSWORD) return alert("密碼錯誤！");
+    
+    if(confirm("確定永久刪除雲端與本地的「" + name + "」？")) { 
+        try { await db.collection("vocab_units").doc(name).delete(); } catch(e) {} 
+        units.splice(i,1); 
+        localStorage.setItem("forest_v14_data", JSON.stringify(units)); 
+        renderUnits(); 
+        document.getElementById('mainEditor').style.display='none'; 
+    }
 }
 
+// 測驗邏輯
 function startQuiz() { qState.words = [...units[activeIndex].words].sort(() => Math.random() - 0.5); qState.idx = 0; qState.wrongWords = []; document.getElementById('studyArea').style.display = 'flex'; document.getElementById('quizUI').style.display = 'block'; document.getElementById('resultUI').style.display = 'none'; showQuestion(); }
 
 function showQuestion() { 
