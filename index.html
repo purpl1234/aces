@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Vocab v14 - Audio Sync</title>
+    <title>Forest Vocab v14.1 - Fix Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        /* 延用 v13 風格，新增語音按鈕樣式 */
         :root { --forest-deep: #0a110a; --tech-neon: #00ff88; --tech-blue: #00d9ff; --danger: #ff4757; --text: #e0f0e0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--forest-deep); color: var(--text); margin: 0; padding: 20px; background-image: radial-gradient(circle at 50% 50%, #162a16 0%, #050a05 100%); min-height: 100vh; }
         .container { max-width: 900px; margin: auto; }
@@ -16,26 +15,25 @@
         input, textarea { background: rgba(0,0,0,0.5); border: 1px solid #2d5a27; color: var(--tech-neon); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; }
         button { background: #1b3d1b; color: var(--tech-neon); border: 1px solid var(--tech-neon); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px 0; }
         button:hover { background: var(--tech-neon); color: #0a110a; }
-        .btn-speak { background: transparent; border: 1px solid var(--tech-blue); color: var(--tech-blue); padding: 4px 8px; font-size: 0.9rem; margin-left: 5px; }
+        .btn-speak { background: transparent; border: 1px solid var(--tech-blue); color: var(--tech-blue); padding: 4px 8px; font-size: 0.9rem; margin-left: 5px; border-radius: 5px;}
         .btn-speak:hover { background: var(--tech-blue); color: white; }
         .unit-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { color: var(--tech-neon); text-align: left; padding: 10px; border-bottom: 2px solid var(--tech-neon); }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #studyArea { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #050a05; z-index: 999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .quiz-zh { font-size: 3rem; margin-bottom: 30px; color: #fff; text-shadow: 0 0 10px rgba(0,255,136,0.3); }
         .quiz-inputs { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; max-width: 600px; }
         .q-input-en { flex: 3; font-size: 1.8rem; text-align: center; border: none; border-bottom: 3px solid var(--tech-blue); background: transparent; color: var(--tech-blue); outline:none;}
         .q-input-pos { flex: 1.5; font-size: 1.8rem; text-align: center; border: none; border-bottom: 3px solid var(--tech-neon); background: transparent; color: var(--tech-neon); outline:none;}
         .correct-answer-box { background: rgba(255, 71, 87, 0.15); border: 1px solid var(--danger); padding: 20px; border-radius: 12px; margin: 20px 0; display: none; }
-        .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--tech-neon); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <h1>🌳 Forest Vocab v14 <span id="cloudStatus" style="font-size:0.8rem; color:var(--tech-blue);">☁️ 雲端已連線</span></h1>
+        <h1>🌳 Forest Vocab v14.1 <span id="cloudStatus" style="font-size:0.8rem; color:var(--tech-blue);">☁️ 雲端已連線</span></h1>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <label>單元名稱</label>
@@ -61,7 +59,7 @@
             <button style="background:var(--tech-neon); color:black" onclick="startQuiz()">📝 開始挑戰</button>
         </div>
         <table>
-            <thead><tr><th>英文</th><th>詞性</th><th>中文</th><th>刪除</th></tr></thead>
+            <thead><tr><th>英文 (點擊發音)</th><th>詞性</th><th>中文</th><th>操作</th></tr></thead>
             <tbody id="wordTable"></tbody>
         </table>
     </div>
@@ -71,16 +69,14 @@
     <div id="quizUI" style="text-align:center; width:100%; max-width:600px;">
         <div id="quizProgress" style="color:#666; margin-bottom:10px;"></div>
         <div id="quizZh" class="quiz-zh"></div>
-        <div class="quiz-inputs">
+        <div class="quiz-inputs" id="inputArea">
             <input type="text" id="ansEn" class="q-input-en" placeholder="英文" autocomplete="off">
             <input type="text" id="ansPos" class="q-input-pos" placeholder="詞性" autocomplete="off">
         </div>
         <div id="feedback" style="min-height:30px; margin:15px 0;"></div>
         <div id="correctBox" class="correct-answer-box">
-            <div style="color:var(--danger); font-weight:bold; margin-bottom:10px;">答錯了，請背誦：</div>
-            <div id="actualAns" style="font-size:1.6rem; color:white;"></div>
-            <button onclick="speakText(qState.words[qState.idx].en)" class="btn-speak" style="margin-bottom:10px;">🔊 聽發音</button>
-            <button onclick="nextQuestion()" style="margin-top:20px; background:var(--danger); border:none; color:white; width:100%;">我背好了</button>
+            <div id="actualAns" style="font-size:1.6rem; color:white; margin-bottom:15px;"></div>
+            <button onclick="nextQuestion()" style="background:var(--danger); border:none; color:white; width:100%;">我背好了</button>
         </div>
         <button id="submitBtn" onclick="checkAnswer()" style="width:100%; font-size:1.2rem;">送出 (Enter)</button>
     </div>
@@ -110,17 +106,15 @@ let units = JSON.parse(localStorage.getItem("forest_v14_data") || "[]");
 let activeIndex = null;
 let qState = { words: [], idx: 0, wrongWords: [] };
 
-// --- 🔊 語音功能 ---
 function speakText(text) {
-    if (!window.speechSynthesis) return alert("您的瀏覽器不支援發音功能");
-    window.speechSynthesis.cancel(); // 停止之前的聲音
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US'; // 設定美式英語
-    utterance.rate = 0.9;     // 稍微放慢一點點
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
 }
 
-// 雲端功能 (延用 v13)
 async function loadFromCloud() {
     try {
         const snapshot = await db.collection("vocab_units").get();
@@ -136,10 +130,10 @@ async function saveToCloud() {
         await db.collection("vocab_units").doc(unit.name).set(unit);
         localStorage.setItem("forest_v14_data", JSON.stringify(units));
         document.getElementById('cloudStatus').innerText = "✅ 雲端已同步";
+        alert("儲存成功！");
     } catch (e) { document.getElementById('cloudStatus').innerText = "❌ 同步失敗"; }
 }
 
-// 解析與介面
 function parseTextLogic(text) {
     const words = [];
     text.split('\n').forEach(line => {
@@ -162,10 +156,11 @@ function runManualParse() {
     const text = document.getElementById('manualText').value;
     const name = document.getElementById('unitName').value || "新單元";
     if(!text) return;
-    const newUnit = { name, words: parseTextLogic(text) };
-    units.push(newUnit); renderUnits();
+    units.push({ name, words: parseTextLogic(text) });
+    renderUnits();
     document.getElementById('manualText').value = "";
-    activeIndex = units.length - 1; saveToCloud();
+    activeIndex = units.length - 1;
+    saveToCloud();
 }
 
 function renderUnits() {
@@ -173,14 +168,16 @@ function renderUnits() {
 }
 
 function openUnit(i) { activeIndex = i; document.getElementById('mainEditor').style.display = 'block'; document.getElementById('currentUnitTitle').innerText = units[i].name; renderTable(); }
+
 function renderTable() {
     document.getElementById('wordTable').innerHTML = units[activeIndex].words.map((w, j) => `
         <tr>
             <td>
-                ${w.en} <button class="btn-speak" onclick="speakText('${w.en.replace(/'/g, "\\'")}')">🔊</button>
+                <input type="text" value="${w.en}" onchange="units[activeIndex].words[${j}].en=this.value">
+                <button class="btn-speak" onclick="speakText(units[activeIndex].words[${j}].en)">🔊</button>
             </td>
-            <td>${w.pos}</td>
-            <td>${w.zh}</td>
+            <td><input type="text" value="${w.pos}" onchange="units[activeIndex].words[${j}].pos=this.value"></td>
+            <td><input type="text" value="${w.zh}" onchange="units[activeIndex].words[${j}].zh=this.value"></td>
             <td><button class="danger" onclick="units[activeIndex].words.splice(${j},1);renderTable();">🗑️</button></td>
         </tr>
     `).join('');
@@ -190,15 +187,28 @@ async function deleteUnit(name, i) {
     if(confirm("確定刪除？")) { try { await db.collection("vocab_units").doc(name).delete(); } catch(e) {} units.splice(i,1); localStorage.setItem("forest_v14_data", JSON.stringify(units)); renderUnits(); document.getElementById('mainEditor').style.display='none'; }
 }
 
-// 測驗邏輯
 function startQuiz() { qState.words = [...units[activeIndex].words].sort(() => Math.random() - 0.5); qState.idx = 0; qState.wrongWords = []; document.getElementById('studyArea').style.display = 'flex'; document.getElementById('quizUI').style.display = 'block'; document.getElementById('resultUI').style.display = 'none'; showQuestion(); }
-function showQuestion() { const w = qState.words[qState.idx]; document.getElementById('quizProgress').innerText = `STEP: ${qState.idx + 1} / ${qState.words.length}`; document.getElementById('quizZh').innerText = w.zh; document.getElementById('ansEn').value = ""; document.getElementById('ansPos').value = ""; document.getElementById('feedback').innerText = ""; document.getElementById('correctBox').style.display = 'none'; document.getElementById('inputArea').style.display = 'flex'; document.getElementById('submitBtn').style.display = 'block'; document.getElementById('ansEn').focus(); }
+
+function showQuestion() { 
+    const w = qState.words[qState.idx]; 
+    document.getElementById('quizProgress').innerText = `STEP: ${qState.idx + 1} / ${qState.words.length}`; 
+    document.getElementById('quizZh').innerText = w.zh; 
+    document.getElementById('ansEn').value = ""; 
+    document.getElementById('ansPos').value = ""; 
+    document.getElementById('feedback').innerText = ""; 
+    document.getElementById('correctBox').style.display = 'none'; 
+    document.getElementById('inputArea').style.display = 'flex'; 
+    document.getElementById('submitBtn').style.display = 'block'; 
+    document.getElementById('ansEn').focus(); 
+}
+
 function checkAnswer() {
     const w = qState.words[qState.idx];
     const userEn = document.getElementById('ansEn').value.trim().toLowerCase();
     const userPos = document.getElementById('ansPos').value.trim().toLowerCase();
+    
     if (userEn === w.en.toLowerCase() && userPos === w.pos.toLowerCase()) {
-        speakText(w.en); // 答對自動發音
+        speakText(w.en);
         document.getElementById('feedback').innerHTML = "<span style='color:var(--tech-neon)'>Correct! ✓</span>";
         setTimeout(() => { nextQuestion(); }, 800);
     } else {
@@ -206,22 +216,30 @@ function checkAnswer() {
         document.getElementById('inputArea').style.display = 'none';
         document.getElementById('submitBtn').style.display = 'none';
         document.getElementById('correctBox').style.display = 'block';
-        document.getElementById('actualAns').innerHTML = `英文：${w.en}<br>詞性：${w.pos}`;
-        speakText(w.en); // 答錯也發音讓使用者練習
+        document.getElementById('actualAns').innerHTML = `<span style="color:var(--danger)">錯誤！正確為：</span><br>${w.en} [${w.pos}]`;
+        speakText(w.en);
     }
 }
 
 function nextQuestion() { qState.idx++; if (qState.idx >= qState.words.length) showFinalResult(); else showQuestion(); }
+
 function showFinalResult() { 
     document.getElementById('quizUI').style.display = 'none'; 
     document.getElementById('resultUI').style.display = 'block'; 
     const total = qState.words.length; const wrong = qState.wrongWords.length;
-    document.getElementById('resSummary').innerHTML = `<div class='stat-val'>正確率：${Math.round(((total-wrong)/total)*100)}%</div><div>錯題數：${wrong} / ${total}</div>`;
+    document.getElementById('resSummary').innerHTML = `<div style="font-size:1.5rem; color:var(--tech-neon)">正確率：${Math.round(((total-wrong)/total)*100)}%</div><div>錯題數：${wrong} / ${total}</div>`;
     document.getElementById('wrongItems').innerHTML = qState.wrongWords.map(w => `<div style='margin:10px 0;'><strong>${w.en}</strong> [${w.pos}] - ${w.zh} <button class="btn-speak" onclick="speakText('${w.en.replace(/'/g, "\\'")}')">🔊</button></div>`).join('');
 }
+
 function exitQuiz() { document.getElementById('studyArea').style.display = 'none'; }
 
-document.addEventListener('keypress', (e) => { if (e.key === 'Enter' && document.getElementById('studyArea').style.display === 'flex') { if (document.getElementById('correctBox').style.display === 'block') nextQuestion(); else if (document.getElementById('resultUI').style.display === 'none') checkAnswer(); } });
+document.addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter' && document.getElementById('studyArea').style.display === 'flex') { 
+        if (document.getElementById('correctBox').style.display === 'block') nextQuestion(); 
+        else if (document.getElementById('resultUI').style.display === 'none') checkAnswer(); 
+    } 
+});
+
 loadFromCloud();
 </script>
 </body>
