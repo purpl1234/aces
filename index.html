@@ -3,162 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>親子單字小書 v15.1</title>
+    <title>親子單字小書 v15.2</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --bg-color: #fdfaf5;
-            --card-bg: #ffffff;
-            --text-main: #4a4a4a;
-            --primary: #8ac6d1;
-            --primary-dark: #6eabb7;
-            --secondary: #bbded6;
-            --accent: #ffb6b9;
-            --shadow: 0 4px 10px rgba(0,0,0,0.05);
+            --bg-color: #fdfaf5; --card-bg: #ffffff; --text-main: #4a4a4a;
+            --primary: #8ac6d1; --primary-dark: #6eabb7; --secondary: #bbded6;
+            --accent: #ffb6b9; --shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-
         body {
             font-family: 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg-color); color: var(--text-main);
             margin: 0; padding: 15px; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
         }
-
-        .container { width: 100%; max-width: 700px; }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 20px; padding: 20px; margin-bottom: 20px;
-            box-shadow: var(--shadow); border: 2px solid transparent;
-        }
-
+        .container { width: 100%; max-width: 600px; }
+        .card { background-color: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
         h1 { color: var(--primary-dark); text-align: center; font-size: 1.8rem; margin: 10px 0 5px 0; }
-        #cloudStatus { text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 20px; display: block; }
-
-        h2 { color: var(--text-main); font-size: 1.3rem; border-left: 6px solid var(--secondary); padding-left: 10px; margin-top: 0; }
-
-        input[type="text"], textarea {
-            background-color: #f1f1f1; border: 2px solid transparent;
-            color: var(--text-main); padding: 15px; border-radius: 12px;
-            width: 100%; box-sizing: border-box; outline: none; font-size: 1.1rem; margin-bottom: 10px;
+        #cloudStatus { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 20px; display: block; }
+        h2 { border-left: 6px solid var(--secondary); padding-left: 10px; font-size: 1.3rem; }
+        
+        /* 單元列表 */
+        .unit-item {
+            background: white; padding: 20px; border-radius: 15px; margin-bottom: 12px;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            border: 2px solid #eee; transition: 0.2s;
         }
-        input[type="text"]:focus { border-color: var(--primary); background-color: white; }
+        .unit-item:hover { border-color: var(--primary); background: var(--secondary); }
+
+        /* 學習模式卡片 */
+        .learn-card {
+            background: white; border-radius: 20px; padding: 30px; text-align: center;
+            box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #eee;
+        }
+        .learn-en { font-size: 3rem; font-weight: bold; color: var(--primary-dark); margin-bottom: 5px; }
+        .learn-pos { color: #888; font-size: 1.2rem; margin-bottom: 15px; }
+        .learn-zh { font-size: 2rem; margin-bottom: 25px; }
 
         button {
             background-color: var(--primary); color: white; border: none;
             padding: 15px 25px; border-radius: 50px; cursor: pointer;
-            font-weight: bold; font-size: 1.1rem; transition: 0.2s; margin: 5px 0; width: 100%;
+            font-weight: bold; font-size: 1.1rem; width: 100%; margin: 5px 0;
         }
-        button:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        button.secondary { background-color: var(--secondary); color: #444; }
         button.danger { background-color: #f1f1f1; color: var(--accent); }
 
-        .unit-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background-color: #f9f9f9; padding: 18px; border-radius: 15px; margin-bottom: 12px;
-            cursor: pointer; transition: 0.2s; border: 1px solid #eee;
-        }
-        .unit-item:hover { background-color: var(--secondary); border-color: var(--primary); }
-        .unit-title { font-size: 1.2rem; font-weight: bold; }
-
-        /* 編輯區域模式 */
-        #adminArea { display: none; margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px;}
-        #toggleAdminBtn { background-color: #f1f1f1; color: #888; border-radius: 10px; padding: 10px; font-size: 0.9rem; width: auto; align-self: center;}
-
-        /* 編輯卡片 */
-        .word-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .btn-speak {
-            background-color: var(--secondary); color: white; border-radius: 50%;
-            width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: none; cursor: pointer;
+        /* 喇叭按鈕 */
+        .btn-speak-big {
+            background: var(--secondary); color: white; border: none;
+            width: 70px; height: 70px; border-radius: 50%; font-size: 2rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        /* 測驗層 */
-        #studyArea {
+        /* 畫面層級 */
+        .overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--bg-color); z-index: 999; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; overflow-y: auto;
-        }
-        .quiz-zh { font-size: 3.2rem; margin-bottom: 30px; color: var(--text-main); font-weight: bold; text-align: center;}
-        .q-input-en, .q-input-pos {
-            font-size: 1.8rem !important; text-align: center; border: none;
-            border-radius: 15px !important; background-color: white !important;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 18px !important; margin-bottom: 15px;
+            background: var(--bg-color); z-index: 999; display: none;
+            flex-direction: column; align-items: center; padding: 20px; overflow-y: auto;
         }
 
-        .correct-answer-box {
-            background-color: white; border: 4px solid var(--accent);
-            padding: 25px; border-radius: 20px; margin: 20px 0; display: none;
+        /* 測驗專用 */
+        .quiz-zh { font-size: 3.5rem; font-weight: bold; margin-bottom: 30px; }
+        .q-input {
+            font-size: 2rem; text-align: center; border: none; border-radius: 15px;
+            background: white; box-shadow: var(--shadow); padding: 15px; width: 100%; margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>親子單字小書 v15.1</h1>
-    <span id="cloudStatus">☁️ 檢查連線中...</span>
+    <h1>親子單字小書 v15.2</h1>
+    <span id="cloudStatus">☁️ 檢查中...</span>
 
-    <div id="quizSelection" class="card">
-        <h2>📂 請選擇要挑戰的單元：</h2>
-        <div id="quizList">正在讀取雲端單元...</div>
+    <div class="card">
+        <h2>📂 選擇單元開始預習</h2>
+        <div id="unitList">讀取中...</div>
     </div>
 
-    <div style="text-align: center;">
-        <button id="toggleAdminBtn" onclick="toggleAdmin()">⚙️ 家長管理模式</button>
-    </div>
-
-    <div id="adminArea">
+    <button onclick="toggleAdmin()" style="background:none; color:#bbb; font-size:0.8rem;">⚙️ 家長管理模式</button>
+    
+    <div id="adminArea" style="display:none; margin-top:20px;">
         <div class="card">
-            <h2>🧩 匯入新單元</h2>
-            <input id="unitName" type="text" placeholder="單元名稱 (如: Unit 58)">
-            <textarea id="manualText" style="height:80px" placeholder="貼上解析好的文字..."></textarea>
-            <button onclick="runManualParse()">解析並加入</button>
-        </div>
-
-        <div id="mainEditor" class="card" style="display:none;">
-            <h2 id="currentUnitTitle">編輯單元</h2>
-            <div style="display:flex; gap:10px;">
-                <button onclick="saveToCloud()" style="flex:1; background-color: var(--secondary); color: #444;">🔒 儲存到雲端</button>
-                <button class="danger" onclick="closeEditor()" style="flex:1; width: auto;">關閉</button>
-            </div>
-            <div id="wordTable" style="margin-top:20px;"></div>
+            <h3>🧩 匯入單元</h3>
+            <input id="unitName" type="text" placeholder="名稱">
+            <textarea id="manualText" placeholder="貼上文字..."></textarea>
+            <button onclick="runManualParse()">解析並儲存</button>
         </div>
     </div>
 </div>
 
-<div id="studyArea">
-    <div id="quizUI" style="width: 100%; max-width: 500px; text-align: center;">
-        <div id="quizProgress" style="color:#888; margin-bottom:15px;"></div>
-        <div id="quizZh" class="quiz-zh">載入中...</div>
+<div id="learnArea" class="overlay">
+    <div style="width:100%; max-width:500px; text-align:center;">
+        <h2 id="learnUnitTitle" style="margin-bottom:20px;"></h2>
+        <div id="learnProgress" style="color:#888; margin-bottom:10px;"></div>
         
-        <div id="inputArea" style="display: flex; flex-direction: column;">
-            <input type="text" id="ansEn" class="q-input-en" placeholder="輸入英文" autocomplete="off" autocapitalize="none">
-            <input type="text" id="ansPos" class="q-input-pos" placeholder="詞性 (n, v, adj...)" autocomplete="off">
+        <div class="learn-card">
+            <div id="learnEn" class="learn-en"></div>
+            <div id="learnPos" class="learn-pos"></div>
+            <div id="learnZh" class="learn-zh"></div>
+            <button class="btn-speak-big" onclick="speakCurrentLearn()">🔊</button>
         </div>
 
-        <div id="feedback" style="min-height: 40px; font-weight: bold; font-size: 1.2rem;"></div>
-
-        <div id="correctBox" class="correct-answer-box">
-            <div style="color:var(--accent); font-weight:bold; margin-bottom:10px;">正確答案是：</div>
-            <div id="actualAns" style="font-size: 2rem; font-weight: bold; margin-bottom: 15px;"></div>
-            <button onclick="nextQuestion()">記好了，下一題</button>
+        <div style="display:flex; gap:10px;">
+            <button class="secondary" onclick="prevLearn()">上一個</button>
+            <button class="secondary" onclick="nextLearn()">下一個</button>
         </div>
         
-        <button id="submitBtn" onclick="checkAnswer()">送出答案</button>
-        <button onclick="exitQuiz()" style="background:none; color:#bbb; margin-top:20px;">結束練習</button>
+        <button style="margin-top:30px; background:var(--primary-dark);" onclick="startQuizFromLearn()">我準備好了，開始測驗！💪</button>
+        <button style="background:none; color:#888;" onclick="closeOverlays()">返回列表</button>
     </div>
+</div>
 
-    <div id="resultUI" style="display:none; text-align: center;">
-        <h1 style="font-size: 3rem;">🎉 完成！</h1>
-        <div id="resRate" style="font-size: 4rem; color: var(--primary-dark); font-weight: bold;">0%</div>
-        <button onclick="exitQuiz()" style="margin-top: 20px;">返回列表</button>
+<div id="quizArea" class="overlay">
+    <div style="width:100%; max-width:500px; text-align:center;">
+        <div id="quizProgress" style="color:#888; margin-bottom:20px;"></div>
+        <div id="quizZh" class="quiz-zh"></div>
+        
+        <div id="quizInputArea">
+            <input type="text" id="ansEn" class="q-input" placeholder="輸入英文" autocomplete="off" autocapitalize="none">
+            <input type="text" id="ansPos" class="q-input" style="font-size:1.2rem;" placeholder="詞性">
+        </div>
+
+        <div id="feedback" style="min-height:40px; font-weight:bold; color:var(--primary-dark);"></div>
+
+        <div id="correctBox" style="display:none; background:white; border:4px solid var(--accent); border-radius:20px; padding:20px; margin:20px 0;">
+            <div style="color:var(--accent); margin-bottom:10px;">正確答案：</div>
+            <div id="actualAns" style="font-size:2rem; font-weight:bold;"></div>
+            <button onclick="nextQuiz()">記住了</button>
+        </div>
+
+        <button id="submitBtn" onclick="checkAnswer()">送出答案</button>
+    </div>
+</div>
+
+<div id="resultArea" class="overlay">
+    <div style="text-align:center; margin-top:50px;">
+        <h1 style="font-size:3rem;">🎉 太棒了！</h1>
+        <div id="resRate" style="font-size:5rem; color:var(--primary-dark); font-weight:bold;"></div>
+        <button onclick="closeOverlays()" style="margin-top:40px;">回到列表</button>
     </div>
 </div>
 
 <script>
-// --- [❗ 請務必在此處更換為你的 Firebase Config ❗] ---
+// --- [請填入你的 Firebase Config] ---
 const firebaseConfig = {
     apiKey: "AIzaSyDFi2cajmGW9jr7dLgdV00GE0WdDkYT7Kw",
   authDomain: "my-vocab-c69f4.firebaseapp.com",
@@ -169,148 +159,90 @@ const firebaseConfig = {
   measurementId: "G-1CF7ZXPX01"
 };
 
-const MY_SYNC_PASSWORD = "1234"; // 你的同步密碼
+const MY_SYNC_PASSWORD = "1234"; 
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let units = [];
 let activeIndex = null;
+let learnIdx = 0;
 let qState = { words: [], idx: 0, wrongWords: [] };
 
 function speakText(text) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.85;
+    utterance.lang = 'en-US'; utterance.rate = 0.8;
     window.speechSynthesis.speak(utterance);
 }
 
-// 強化版：從雲端載入單元
 async function loadFromCloud() {
     const statusEl = document.getElementById('cloudStatus');
     try {
-        statusEl.innerText = "☁️ 正在連線雲端資料庫...";
         const snapshot = await db.collection("vocab_units").get();
-        const cloudUnits = [];
-        snapshot.forEach(doc => cloudUnits.push(doc.data()));
-
-        if (cloudUnits.length > 0) {
-            units = cloudUnits;
-            renderUnits();
-            statusEl.innerText = "✅ 雲端同步成功 (" + cloudUnits.length + " 個單元)";
-        } else {
-            document.getElementById('quizList').innerText = "目前沒有單元，請進入管理模式新增。";
-            statusEl.innerText = "❓ 雲端目前沒有資料";
-        }
-    } catch (e) {
-        console.error(e);
-        statusEl.innerText = "❌ 連線失敗: " + e.message;
-    }
-}
-
-async function saveToCloud() {
-    if (activeIndex === null) return;
-    const password = prompt("請輸入同步密碼：");
-    if (password !== MY_SYNC_PASSWORD) return alert("密碼錯誤");
-
-    const unit = units[activeIndex];
-    try {
-        await db.collection("vocab_units").doc(unit.name).set(unit);
-        alert("儲存成功！");
-        loadFromCloud(); // 重新讀取確保同步
-    } catch (e) { alert("儲存失敗"); }
+        units = []; snapshot.forEach(doc => units.push(doc.data()));
+        renderUnits();
+        statusEl.innerText = `✅ 雲端已連線 (${units.length} 個單元)`;
+    } catch (e) { statusEl.innerText = "❌ 連線失敗"; }
 }
 
 function renderUnits() {
-    const listHtml = units.map((u, i) => `
-        <div class="unit-item" onclick="startQuiz(${i})">
-            <span class="unit-title">📘 ${u.name}</span>
-            <span style="color:#888;">${u.words.length} 字 ></span>
-        </div>
-        <button onclick="event.stopPropagation(); openUnitEditor(${i})" style="width:auto; font-size:0.8rem; background:#f1f1f1; color:#888; padding:5px 15px; margin-bottom:15px; display:none;" class="admin-only">✎ 編輯</button>
-    `).join('');
-    document.getElementById('quizList').innerHTML = listHtml;
-}
-
-function openUnitEditor(i) {
-    activeIndex = i;
-    document.getElementById('mainEditor').style.display = 'block';
-    document.getElementById('currentUnitTitle').innerText = `正在編輯：${units[i].name}`;
-    renderEditorTable();
-}
-
-function renderEditorTable() {
-    document.getElementById('wordTable').innerHTML = units[activeIndex].words.map((w, j) => `
-        <div class="word-card">
-            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-                <input type="text" value="${w.en}" onchange="units[activeIndex].words[${j}].en=this.value">
-                <button class="btn-speak" onclick="speakText('${w.en}')">🔊</button>
-            </div>
-            <input type="text" value="${w.pos}" onchange="units[activeIndex].words[${j}].pos=this.value" style="font-size:0.9rem;">
-            <input type="text" value="${w.zh}" onchange="units[activeIndex].words[${j}].zh=this.value">
-            <button class="danger" onclick="units[activeIndex].words.splice(${j},1);renderEditorTable();" style="width:auto; font-size:0.8rem; padding:5px 10px;">🗑️ 刪除</button>
+    document.getElementById('unitList').innerHTML = units.map((u, i) => `
+        <div class="unit-item" onclick="openLearn(${i})">
+            <span style="font-size:1.2rem; font-weight:bold;">📘 ${u.name}</span>
+            <span style="color:#888;">${u.words.length} 字 ➜</span>
         </div>
     `).join('');
 }
 
-function runManualParse() {
-    const text = document.getElementById('manualText').value;
-    const name = document.getElementById('unitName').value || "新單元";
-    if(!text) return;
-    const newWords = [];
-    text.split('\n').forEach(line => {
-        let clean = line.replace(/^\d+[\.\s]*/, "").replace(/[﹩﹢％﹔﹕﹥﹤﹍﹉﹎﹊﹒﹙﹚〔〕〝〞ˊˇˋ˙]|[\u3105-\u3129]/g, "");
-        const parts = clean.split(/[–-]/);
-        if (parts.length >= 2) {
-            let en = parts[0].trim();
-            let remain = parts.slice(1).join('-').trim();
-            const posMatch = remain.match(/^([a-z\s\/\.\(\)]+)(?=\s|[\u4e00-\u9fa5])/i);
-            let pos = "n", zh = remain;
-            if (posMatch) { pos = posMatch[1].trim(); zh = remain.substring(posMatch[0].length).trim(); }
-            if (en) newWords.push({ en, pos, zh });
-        }
-    });
-    units.push({ name, words: newWords });
-    renderUnits();
-    document.getElementById('manualText').value = "";
-    alert("已匯入，請點擊下方的儲存按鈕上傳到雲端。");
-}
-
-function toggleAdmin() {
-    const area = document.getElementById('adminArea');
-    const adminBtns = document.querySelectorAll('.admin-only');
-    if(area.style.display === 'none' || area.style.display === '') {
-        const pw = prompt("請輸入密碼：");
-        if(pw === MY_SYNC_PASSWORD) {
-            area.style.display = 'block';
-            adminBtns.forEach(b => b.style.display = 'inline-block');
-        } else { alert("密碼錯誤"); }
-    } else {
-        area.style.display = 'none';
-        adminBtns.forEach(b => b.style.display = 'none');
-    }
-}
-
-function startQuiz(i) {
+// 【學習模式邏輯】
+function openLearn(i) {
     activeIndex = i;
+    learnIdx = 0;
+    document.getElementById('learnArea').style.display = 'flex';
+    document.getElementById('learnUnitTitle').innerText = units[i].name;
+    showLearnWord();
+}
+
+function showLearnWord() {
+    const w = units[activeIndex].words[learnIdx];
+    document.getElementById('learnProgress').innerText = `學習進度：${learnIdx + 1} / ${units[activeIndex].words.length}`;
+    document.getElementById('learnEn').innerText = w.en;
+    document.getElementById('learnPos').innerText = `[ ${w.pos} ]`;
+    document.getElementById('learnZh').innerText = w.zh;
+    speakText(w.en);
+}
+
+function nextLearn() {
+    if (learnIdx < units[activeIndex].words.length - 1) { learnIdx++; showLearnWord(); }
+    else { alert("已經是最後一個囉！準備好可以開始測驗了。"); }
+}
+
+function prevLearn() {
+    if (learnIdx > 0) { learnIdx--; showLearnWord(); }
+}
+
+function speakCurrentLearn() {
+    speakText(units[activeIndex].words[learnIdx].en);
+}
+
+// 【測驗模式邏輯】
+function startQuizFromLearn() {
+    document.getElementById('learnArea').style.display = 'none';
+    document.getElementById('quizArea').style.display = 'flex';
     qState.words = [...units[activeIndex].words].sort(() => Math.random() - 0.5);
     qState.idx = 0; qState.wrongWords = [];
-    document.getElementById('studyArea').style.display = 'flex';
-    document.getElementById('quizUI').style.display = 'block';
-    document.getElementById('resultUI').style.display = 'none';
-    showQuestion();
+    showQuizQuestion();
 }
 
-function showQuestion() {
+function showQuizQuestion() {
     const w = qState.words[qState.idx];
-    document.getElementById('quizProgress').innerText = `${qState.idx + 1} / ${qState.words.length}`;
+    document.getElementById('quizProgress').innerText = `測驗中：${qState.idx + 1} / ${qState.words.length}`;
     document.getElementById('quizZh').innerText = w.zh;
-    document.getElementById('ansEn').value = "";
-    document.getElementById('ansPos').value = "";
+    document.getElementById('ansEn').value = ""; document.getElementById('ansPos').value = "";
     document.getElementById('feedback').innerText = "";
     document.getElementById('correctBox').style.display = 'none';
-    document.getElementById('inputArea').style.display = 'flex';
+    document.getElementById('quizInputArea').style.display = 'block';
     document.getElementById('submitBtn').style.display = 'block';
 }
 
@@ -320,11 +252,11 @@ function checkAnswer() {
     const pos = document.getElementById('ansPos').value.trim().toLowerCase();
     if (en === w.en.toLowerCase() && pos === w.pos.toLowerCase()) {
         speakText(w.en);
-        document.getElementById('feedback').innerHTML = "<span style='color:var(--secondary)'>✓ 太棒了！</span>";
-        setTimeout(nextQuestion, 1000);
+        document.getElementById('feedback').innerText = "✓ 答對了！";
+        setTimeout(nextQuiz, 1000);
     } else {
         qState.wrongWords.push(w);
-        document.getElementById('inputArea').style.display = 'none';
+        document.getElementById('quizInputArea').style.display = 'none';
         document.getElementById('submitBtn').style.display = 'none';
         document.getElementById('correctBox').style.display = 'block';
         document.getElementById('actualAns').innerText = `${w.en} [${w.pos}]`;
@@ -332,26 +264,57 @@ function checkAnswer() {
     }
 }
 
-function nextQuestion() {
+function nextQuiz() {
     qState.idx++;
     if (qState.idx >= qState.words.length) {
-        document.getElementById('quizUI').style.display = 'none';
-        document.getElementById('resultUI').style.display = 'block';
+        document.getElementById('quizArea').style.display = 'none';
+        document.getElementById('resultArea').style.display = 'flex';
         document.getElementById('resRate').innerText = Math.round(((qState.words.length - qState.wrongWords.length) / qState.words.length) * 100) + "%";
-    } else { showQuestion(); }
+    } else { showQuizQuestion(); }
 }
 
-function exitQuiz() { document.getElementById('studyArea').style.display = 'none'; }
-function closeEditor() { document.getElementById('mainEditor').style.display = 'none'; }
+function closeOverlays() {
+    document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+}
+
+function toggleAdmin() {
+    if(prompt("請輸入管理密碼：") === MY_SYNC_PASSWORD) {
+        document.getElementById('adminArea').style.display = 'block';
+    } else { alert("密碼錯誤"); }
+}
+
+async function runManualParse() {
+    const text = document.getElementById('manualText').value;
+    const name = document.getElementById('unitName').value;
+    if(!text || !name) return;
+    const words = [];
+    text.split('\n').forEach(line => {
+        const parts = line.split(/[–-]/);
+        if (parts.length >= 2) {
+            let en = parts[0].trim();
+            let remain = parts.slice(1).join('-').trim();
+            const posMatch = remain.match(/^([a-z\s\/\.\(\)]+)(?=\s|[\u4e00-\u9fa5])/i);
+            let pos = "n", zh = remain;
+            if (posMatch) { pos = posMatch[1].trim(); zh = remain.substring(posMatch[0].length).trim(); }
+            if (en) words.push({ en, pos, zh });
+        }
+    });
+    const newUnit = { name, words };
+    await db.collection("vocab_units").doc(name).set(newUnit);
+    alert("儲存成功！");
+    location.reload();
+}
 
 document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && document.getElementById('studyArea').style.display === 'flex') {
-        if (document.getElementById('correctBox').style.display === 'block') nextQuestion();
-        else checkAnswer();
+    if (e.key === 'Enter') {
+        if (document.getElementById('quizArea').style.display === 'flex') {
+            if (document.getElementById('correctBox').style.display === 'block') nextQuiz();
+            else checkAnswer();
+        }
     }
 });
 
-loadFromCloud(); // 初始化載入
+loadFromCloud();
 </script>
 </body>
 </html>
