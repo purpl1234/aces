@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>親子單字小書 v15.2</title>
+    <title>aces單字小書 v15.3</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
@@ -32,7 +32,7 @@
         }
         .unit-item:hover { border-color: var(--primary); background: var(--secondary); }
 
-        /* 學習模式卡片 */
+        /* 學習/錯題卡片 */
         .learn-card {
             background: white; border-radius: 20px; padding: 30px; text-align: center;
             box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #eee;
@@ -47,14 +47,11 @@
             font-weight: bold; font-size: 1.1rem; width: 100%; margin: 5px 0;
         }
         button.secondary { background-color: var(--secondary); color: #444; }
-        button.danger { background-color: #f1f1f1; color: var(--accent); }
-
-        /* 喇叭按鈕 */
-        .btn-speak-big {
+        
+        .btn-speak-sm {
             background: var(--secondary); color: white; border: none;
-            width: 70px; height: 70px; border-radius: 50%; font-size: 2rem;
-            display: inline-flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 35px; height: 35px; border-radius: 50%; font-size: 1rem;
+            cursor: pointer; margin-left: 10px; vertical-align: middle;
         }
 
         /* 畫面層級 */
@@ -70,12 +67,23 @@
             font-size: 2rem; text-align: center; border: none; border-radius: 15px;
             background: white; box-shadow: var(--shadow); padding: 15px; width: 100%; margin-bottom: 15px;
         }
+
+        /* 錯題清單樣式 */
+        .wrong-list {
+            width: 100%; background: white; border-radius: 15px; padding: 15px;
+            text-align: left; margin-top: 20px; border: 2px solid var(--accent);
+        }
+        .wrong-item {
+            padding: 10px 0; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .wrong-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>親子單字小書 v15.2</h1>
+    <h1>親子單字小書 v15.3</h1>
     <span id="cloudStatus">☁️ 檢查中...</span>
 
     <div class="card">
@@ -84,34 +92,22 @@
     </div>
 
     <button onclick="toggleAdmin()" style="background:none; color:#bbb; font-size:0.8rem;">⚙️ 家長管理模式</button>
-    
-    <div id="adminArea" style="display:none; margin-top:20px;">
-        <div class="card">
-            <h3>🧩 匯入單元</h3>
-            <input id="unitName" type="text" placeholder="名稱">
-            <textarea id="manualText" placeholder="貼上文字..."></textarea>
-            <button onclick="runManualParse()">解析並儲存</button>
-        </div>
-    </div>
 </div>
 
 <div id="learnArea" class="overlay">
     <div style="width:100%; max-width:500px; text-align:center;">
-        <h2 id="learnUnitTitle" style="margin-bottom:20px;"></h2>
+        <h2 id="learnUnitTitle"></h2>
         <div id="learnProgress" style="color:#888; margin-bottom:10px;"></div>
-        
         <div class="learn-card">
             <div id="learnEn" class="learn-en"></div>
             <div id="learnPos" class="learn-pos"></div>
             <div id="learnZh" class="learn-zh"></div>
-            <button class="btn-speak-big" onclick="speakCurrentLearn()">🔊</button>
+            <button onclick="speakCurrentLearn()" style="width:70px; height:70px; border-radius:50%; font-size:2rem;">🔊</button>
         </div>
-
         <div style="display:flex; gap:10px;">
             <button class="secondary" onclick="prevLearn()">上一個</button>
             <button class="secondary" onclick="nextLearn()">下一個</button>
         </div>
-        
         <button style="margin-top:30px; background:var(--primary-dark);" onclick="startQuizFromLearn()">我準備好了，開始測驗！💪</button>
         <button style="background:none; color:#888;" onclick="closeOverlays()">返回列表</button>
     </div>
@@ -121,34 +117,35 @@
     <div style="width:100%; max-width:500px; text-align:center;">
         <div id="quizProgress" style="color:#888; margin-bottom:20px;"></div>
         <div id="quizZh" class="quiz-zh"></div>
-        
         <div id="quizInputArea">
             <input type="text" id="ansEn" class="q-input" placeholder="輸入英文" autocomplete="off" autocapitalize="none">
             <input type="text" id="ansPos" class="q-input" style="font-size:1.2rem;" placeholder="詞性">
         </div>
-
         <div id="feedback" style="min-height:40px; font-weight:bold; color:var(--primary-dark);"></div>
-
         <div id="correctBox" style="display:none; background:white; border:4px solid var(--accent); border-radius:20px; padding:20px; margin:20px 0;">
-            <div style="color:var(--accent); margin-bottom:10px;">正確答案：</div>
             <div id="actualAns" style="font-size:2rem; font-weight:bold;"></div>
             <button onclick="nextQuiz()">記住了</button>
         </div>
-
         <button id="submitBtn" onclick="checkAnswer()">送出答案</button>
     </div>
 </div>
 
 <div id="resultArea" class="overlay">
-    <div style="text-align:center; margin-top:50px;">
-        <h1 style="font-size:3rem;">🎉 太棒了！</h1>
-        <div id="resRate" style="font-size:5rem; color:var(--primary-dark); font-weight:bold;"></div>
+    <div style="width:100%; max-width:500px; text-align:center; padding-bottom: 40px;">
+        <h1 style="font-size:2.5rem;">挑戰完成！🎉</h1>
+        <div id="resRate" style="font-size:4.5rem; color:var(--primary-dark); font-weight:bold; margin-bottom: 10px;"></div>
+        
+        <div id="wrongListArea" style="display:none;">
+            <h3 style="color:var(--accent); text-align:left; margin-top:30px;">需要再練習的單字：</h3>
+            <div id="wrongList" class="wrong-list"></div>
+        </div>
+
         <button onclick="closeOverlays()" style="margin-top:40px;">回到列表</button>
     </div>
 </div>
 
 <script>
-// --- [請填入你的 Firebase Config] ---
+// --- [❗ 請填入你的 Firebase Config ❗] ---
 const firebaseConfig = {
     apiKey: "AIzaSyDFi2cajmGW9jr7dLgdV00GE0WdDkYT7Kw",
   authDomain: "my-vocab-c69f4.firebaseapp.com",
@@ -195,10 +192,8 @@ function renderUnits() {
     `).join('');
 }
 
-// 【學習模式邏輯】
 function openLearn(i) {
-    activeIndex = i;
-    learnIdx = 0;
+    activeIndex = i; learnIdx = 0;
     document.getElementById('learnArea').style.display = 'flex';
     document.getElementById('learnUnitTitle').innerText = units[i].name;
     showLearnWord();
@@ -206,7 +201,7 @@ function openLearn(i) {
 
 function showLearnWord() {
     const w = units[activeIndex].words[learnIdx];
-    document.getElementById('learnProgress').innerText = `學習進度：${learnIdx + 1} / ${units[activeIndex].words.length}`;
+    document.getElementById('learnProgress').innerText = `預習：${learnIdx + 1} / ${units[activeIndex].words.length}`;
     document.getElementById('learnEn').innerText = w.en;
     document.getElementById('learnPos').innerText = `[ ${w.pos} ]`;
     document.getElementById('learnZh').innerText = w.zh;
@@ -215,18 +210,10 @@ function showLearnWord() {
 
 function nextLearn() {
     if (learnIdx < units[activeIndex].words.length - 1) { learnIdx++; showLearnWord(); }
-    else { alert("已經是最後一個囉！準備好可以開始測驗了。"); }
 }
+function prevLearn() { if (learnIdx > 0) { learnIdx--; showLearnWord(); } }
+function speakCurrentLearn() { speakText(units[activeIndex].words[learnIdx].en); }
 
-function prevLearn() {
-    if (learnIdx > 0) { learnIdx--; showLearnWord(); }
-}
-
-function speakCurrentLearn() {
-    speakText(units[activeIndex].words[learnIdx].en);
-}
-
-// 【測驗模式邏輯】
 function startQuizFromLearn() {
     document.getElementById('learnArea').style.display = 'none';
     document.getElementById('quizArea').style.display = 'flex';
@@ -237,7 +224,7 @@ function startQuizFromLearn() {
 
 function showQuizQuestion() {
     const w = qState.words[qState.idx];
-    document.getElementById('quizProgress').innerText = `測驗中：${qState.idx + 1} / ${qState.words.length}`;
+    document.getElementById('quizProgress').innerText = `測驗：${qState.idx + 1} / ${qState.words.length}`;
     document.getElementById('quizZh').innerText = w.zh;
     document.getElementById('ansEn').value = ""; document.getElementById('ansPos').value = "";
     document.getElementById('feedback').innerText = "";
@@ -253,9 +240,9 @@ function checkAnswer() {
     if (en === w.en.toLowerCase() && pos === w.pos.toLowerCase()) {
         speakText(w.en);
         document.getElementById('feedback').innerText = "✓ 答對了！";
-        setTimeout(nextQuiz, 1000);
+        setTimeout(nextQuiz, 800);
     } else {
-        qState.wrongWords.push(w);
+        qState.wrongWords.push(w); // 存入錯題
         document.getElementById('quizInputArea').style.display = 'none';
         document.getElementById('submitBtn').style.display = 'none';
         document.getElementById('correctBox').style.display = 'block';
@@ -267,10 +254,38 @@ function checkAnswer() {
 function nextQuiz() {
     qState.idx++;
     if (qState.idx >= qState.words.length) {
-        document.getElementById('quizArea').style.display = 'none';
-        document.getElementById('resultArea').style.display = 'flex';
-        document.getElementById('resRate').innerText = Math.round(((qState.words.length - qState.wrongWords.length) / qState.words.length) * 100) + "%";
+        showFinalResult();
     } else { showQuizQuestion(); }
+}
+
+function showFinalResult() {
+    document.getElementById('quizArea').style.display = 'none';
+    document.getElementById('resultArea').style.display = 'flex';
+    
+    const total = qState.words.length;
+    const wrongCount = qState.wrongWords.length;
+    const rate = Math.round(((total - wrongCount) / total) * 100);
+    document.getElementById('resRate').innerText = rate + "%";
+
+    const wrongListArea = document.getElementById('wrongListArea');
+    const wrongList = document.getElementById('wrongList');
+
+    if (wrongCount > 0) {
+        wrongListArea.style.display = 'block';
+        // 這裡顯示錯題清單
+        wrongList.innerHTML = qState.wrongWords.map(w => `
+            <div class="wrong-item">
+                <div>
+                    <strong style="color:var(--primary-dark); font-size:1.2rem;">${w.en}</strong> 
+                    <span style="color:#999; font-size:0.9rem;">[${w.pos}]</span><br>
+                    <span style="color:#666;">${w.zh}</span>
+                </div>
+                <button class="btn-speak-sm" onclick="speakText('${w.en.replace(/'/g, "\\'")}')">🔊</button>
+            </div>
+        `).join('');
+    } else {
+        wrongListArea.style.display = 'none';
+    }
 }
 
 function closeOverlays() {
@@ -278,39 +293,16 @@ function closeOverlays() {
 }
 
 function toggleAdmin() {
-    if(prompt("請輸入管理密碼：") === MY_SYNC_PASSWORD) {
-        document.getElementById('adminArea').style.display = 'block';
-    } else { alert("密碼錯誤"); }
-}
-
-async function runManualParse() {
-    const text = document.getElementById('manualText').value;
-    const name = document.getElementById('unitName').value;
-    if(!text || !name) return;
-    const words = [];
-    text.split('\n').forEach(line => {
-        const parts = line.split(/[–-]/);
-        if (parts.length >= 2) {
-            let en = parts[0].trim();
-            let remain = parts.slice(1).join('-').trim();
-            const posMatch = remain.match(/^([a-z\s\/\.\(\)]+)(?=\s|[\u4e00-\u9fa5])/i);
-            let pos = "n", zh = remain;
-            if (posMatch) { pos = posMatch[1].trim(); zh = remain.substring(posMatch[0].length).trim(); }
-            if (en) words.push({ en, pos, zh });
-        }
-    });
-    const newUnit = { name, words };
-    await db.collection("vocab_units").doc(name).set(newUnit);
-    alert("儲存成功！");
-    location.reload();
+    if(prompt("家長密碼：") === MY_SYNC_PASSWORD) {
+        // 如果需要編輯功能可在此擴充，目前維持簡潔
+        alert("已進入管理模式 (此版建議由原 index.html 進行大量編輯)");
+    }
 }
 
 document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        if (document.getElementById('quizArea').style.display === 'flex') {
-            if (document.getElementById('correctBox').style.display === 'block') nextQuiz();
-            else checkAnswer();
-        }
+    if (e.key === 'Enter' && document.getElementById('quizArea').style.display === 'flex') {
+        if (document.getElementById('correctBox').style.display === 'block') nextQuiz();
+        else checkAnswer();
     }
 });
 
