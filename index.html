@@ -3,98 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Vocab v14.3 - Mobile Optimized</title>
+    <title>親子單字小書 Forest Vocab v15</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { --forest-deep: #0a110a; --tech-neon: #00ff88; --tech-blue: #00d9ff; --danger: #ff4757; --text: #e0f0e0; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--forest-deep); color: var(--text); margin: 0; padding: 15px; background-image: radial-gradient(circle at 50% 50%, #162a16 0%, #050a05 100%); min-height: 100vh; }
-        .container { max-width: 900px; margin: auto; }
-        .card { background: rgba(20, 40, 20, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 15px; padding: 15px; margin-bottom: 20px; }
-        h1 { color: var(--tech-neon); margin: 0 0 15px 0; border-bottom: 1px solid #2d5a27; padding-bottom: 10px; font-size: 1.5rem; }
-        input, textarea { background: rgba(0,0,0,0.5); border: 1px solid #2d5a27; color: var(--tech-neon); padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; }
-        button { background: #1b3d1b; color: var(--tech-neon); border: 1px solid var(--tech-neon); padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px 0; }
-        
-        /* 響應式編輯區設計 */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { color: var(--tech-neon); text-align: left; padding: 10px; border-bottom: 2px solid var(--tech-neon); }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-
-        /* 手機版自動切換為卡片模式 */
-        @media screen and (max-width: 600px) {
-            thead { display: none; } /* 隱藏表頭 */
-            tr { display: block; background: rgba(255,255,255,0.03); margin-bottom: 15px; border-radius: 10px; padding: 10px; border: 1px solid rgba(0,255,136,0.1); }
-            td { display: block; width: 100%; text-align: left; border: none; padding: 5px 0; position: relative; }
-            td::before { content: attr(data-label); display: block; font-size: 0.75rem; color: #666; margin-bottom: 2px; }
-            .btn-speak { position: absolute; right: 5px; top: 25px; } /* 語音按鈕定位 */
-            .btn-del-cell { text-align: right; }
+        /* 🎨 v15 柔和繪本風格 CSS - 專為小孩設計 */
+        :root {
+            /* 主色調：淡再生紙色背景，柔和蠟筆色 */
+            --bg-color: #fdfaf5; /* 輕盈淡米色，不刺眼 */
+            --card-bg: #ffffff;
+            --text-main: #4a4a4a; /* 深灰，比純黑柔和 */
+            --primary: #8ac6d1; /* 柔和粉藍 */
+            --primary-dark: #6eabb7;
+            --secondary: #bbded6; /* 柔和粉綠 */
+            --accent: #ffb6b9; /* 柔和粉紅 (答錯/刪除) */
+            --shadow: 0 4px 10px rgba(0,0,0,0.05); /* 輕微陰影，增加層次 */
         }
 
-        .btn-speak { background: transparent; border: 1px solid var(--tech-blue); color: var(--tech-blue); padding: 4px 8px; font-size: 0.9rem; border-radius: 5px;}
-        .unit-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px; }
-        #studyArea { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #050a05; z-index: 999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .quiz-zh { font-size: 2.5rem; margin-bottom: 25px; color: #fff; text-shadow: 0 0 10px rgba(0,255,136,0.3); }
-        .quiz-inputs { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; max-width: 600px; flex-direction: column; }
-        .q-input-en, .q-input-pos { font-size: 1.5rem; text-align: center; border: none; border-bottom: 3px solid var(--tech-blue); background: transparent; color: var(--tech-blue); outline:none; padding: 10px 0;}
-        .q-input-pos { border-bottom-color: var(--tech-neon); color: var(--tech-neon); }
-        .correct-answer-box { background: rgba(255, 71, 87, 0.15); border: 1px solid var(--danger); padding: 20px; border-radius: 12px; margin: 20px 0; display: none; }
+        body {
+            font-family: 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif; /* 圓潤字體 */
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px; /* 收窄介面，更專注 */
+        }
+
+        /* 卡片設計 - 像一本本小書 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 20px; /* 超圓潤邊角 */
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            font-size: 2rem; /* 字體加大 */
+            margin: 10px 0 25px 0;
+        }
+
+        h2 {
+            color: var(--text-main);
+            font-size: 1.3rem;
+            border-left: 6px solid var(--secondary); /* 柔和裝飾 */
+            padding-left: 10px;
+            margin-top: 0;
+        }
+
+        /* 輸入框 - 寬度夠大，字體加大 */
+        input[type="text"], textarea {
+            background-color: #f1f1f1;
+            border: 2px solid transparent;
+            color: var(--text-main);
+            padding: 15px; /* 加大間距，好點擊 */
+            border-radius: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 1.1rem; /* 字體加大 */
+            margin-bottom: 10px;
+        }
+        input[type="text"]:focus { border-color: var(--primary); background-color: white; }
+
+        /* 按鈕 - 圓潤、大號、好點擊 */
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 25px; /* 按鈕變大 */
+            border-radius: 50px; /* 藥丸形狀，很可愛 */
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem; /* 字體加大 */
+            transition: 0.2s;
+            margin: 5px 0;
+            width: 100%; /* 手機上滿版好點擊 */
+        }
+        button:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        button.danger { background-color: #f1f1f1; color: var(--accent); }
+        button.danger:hover { background-color: var(--accent); color: white; }
+        
+        /* 管理區域 - 分離顯示 */
+        #adminArea { display: none; margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px;}
+        #toggleAdminBtn { background-color: #f1f1f1; color: #888; border-radius: 10px; padding: 10px; font-size: 0.9rem;}
+
+        /* 單元列表樣式 */
+        .unit-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #f9f9f9;
+            padding: 18px; border-radius: 15px; margin-bottom: 12px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .unit-item:hover { background-color: var(--secondary); }
+        .unit-title { font-size: 1.2rem; font-weight: bold; }
+        .unit-count { color: #888; font-size: 0.9rem; margin-left: 5px;}
+
+        /* 測驗/背誦專用卡片 - 完全無表格 */
+        #wordTable { width: 100%; margin-top: 20px; }
+        
+        /* 手機卡片模式優化 - 字體夠大 */
+        @media screen and (max-width: 600px) {
+            .word-card { background: #fdfdfd; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee;}
+            .word-row { display: flex; align-items: center; margin-bottom: 10px; gap: 10px;}
+            .word-card input { font-size: 1.1rem !important; padding: 12px !important;}
+            .speak-container { text-align: right; }
+        }
+
+        /* 喇叭按鈕 - 大號 */
+        .btn-speak {
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 50%; /* 圓形 */
+            width: 50px; height: 50px; /* 變大 */
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; /* 喇叭符號加大 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 測驗層 - 專注，色彩柔和 */
+        #studyArea {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--bg-color); z-index: 999; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; overflow-y: auto;
+        }
+
+        .quiz-container { text-align: center; width: 100%; max-width: 500px; }
+        
+        /* 題目 - 中文翻譯大字 */
+        .quiz-zh { font-size: 3.5rem; margin-bottom: 35px; color: var(--text-main); font-weight: bold;}
+        
+        .quiz-inputs { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; width: 100%; }
+        /* 輸入格 - 超大，圓潤 */
+        .q-input-en, .q-input-pos {
+            font-size: 2rem !important; /* 超大字 */
+            text-align: center; border: none;
+            border-radius: 15px !important;
+            background-color: white !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 20px !important;
+            color: var(--text-main); outline:none;
+        }
+        .q-input-en { color: var(--primary-dark); font-weight: bold;}
+        .q-input-pos { color: #888; font-size: 1.2rem !important;}
+
+        #feedback { min-height: 40px; margin: 20px 0; font-size: 1.3rem; font-weight: bold;}
+
+        /* 錯題背誦方塊 */
+        .correct-answer-box {
+            background-color: white;
+            border: 4px solid var(--accent); /* 粉紅邊框 */
+            padding: 25px; border-radius: 20px;
+            margin: 20px 0; display: none;
+            box-shadow: 0 10px 20px rgba(255,182,185,0.2);
+        }
+        .ans-text { font-size: 2rem; color: var(--primary-dark); font-weight: bold; margin-bottom: 10px;}
+
+        /* 結算頁面 */
+        .result-card { width: 100%; max-width: 500px; text-align: center; }
+        .res-big { font-size: 5rem; font-weight: bold; color: var(--primary-dark); }
+        .wrong-items { text-align: left; background: white; padding: 20px; border-radius: 15px; margin-top: 20px;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card">
-        <h1>🌳 Forest Vocab v14.3 <span id="cloudStatus" style="font-size:0.7rem; color:var(--tech-blue);">☁️ 雲端連線中</span></h1>
-        <div id="importArea">
-            <input id="unitName" type="text" placeholder="單元名稱 (如: Unit 58)" style="margin-bottom:10px;">
-            <textarea id="manualText" style="height:60px" placeholder="貼上文字進行解析..."></textarea>
-            <button onclick="runManualParse()" style="width:100%">🧩 匯入並備份</button>
-        </div>
+    <h1>親子單字小書 Forest Vocab v15</h1>
+
+    <div id="quizSelection" class="card">
+        <h2>📂 請選擇要挑戰的單元：</h2>
+        <div id="quizList"></div>
     </div>
 
-    <div class="card">
-        <h2>📂 記憶庫</h2>
-        <div id="unitList"></div>
-    </div>
-
-    <div id="mainEditor" class="card" style="display:none;">
-        <h2 id="currentUnitTitle"></h2>
-        <div style="display:flex; gap:10px; flex-wrap: wrap;">
-            <button onclick="saveToCloud()" style="flex:1">🔒 同步雲端</button>
-            <button style="background:var(--tech-neon); color:black; flex:1" onclick="startQuiz()">📝 開始挑戰</button>
+    <button id="toggleAdminBtn" onclick="toggleAdmin()">⚙️ 管理模式 (家長用)</button>
+    <div id="adminArea">
+        <div class="card">
+            <h2>🧩 匯入新單元 (解析圖片文字)</h2>
+            <input id="unitName" type="text" placeholder="單元名稱 (例如: Unit 58)">
+            <textarea id="manualText" style="height:80px" placeholder="將剛才辨識好的文字整塊貼在這裡..."></textarea>
+            <button onclick="runManualParse()">解析並加入記憶庫</button>
         </div>
-        <table>
-            <thead><tr><th>英文</th><th>詞性</th><th>中文</th><th>操作</th></tr></thead>
-            <tbody id="wordTable"></tbody>
-        </table>
+
+        <div id="mainEditor" class="card" style="display:none;">
+            <h2 id="currentUnitTitle">編輯單元內容</h2>
+            <div style="display:flex; gap:10px;">
+                <button onclick="saveToCloud()" style="flex:1; background-color: var(--secondary); color: var(--text-main);">🔒 儲存更改 (需密碼)</button>
+                <button class="danger" onclick="closeEditor()" style="flex:1;">關閉編輯器</button>
+            </div>
+            <div id="wordTable"></div>
+        </div>
     </div>
 </div>
 
 <div id="studyArea">
-    <div id="quizUI" style="text-align:center; width:100%; max-width:600px;">
-        <div id="quizProgress" style="color:#666; margin-bottom:10px;"></div>
-        <div id="quizZh" class="quiz-zh"></div>
+    <div id="quizUI" class="quiz-container">
+        <div id="quizProgress" style="color:#888; margin-bottom:15px; font-size: 1.1rem;"></div>
+        <div id="quizZh" class="quiz-zh">大部分</div>
+        
         <div class="quiz-inputs" id="inputArea">
-            <input type="text" id="ansEn" class="q-input-en" placeholder="英文單字" autocomplete="off" autocapitalize="none">
+            <input type="text" id="ansEn" class="q-input-en" placeholder="請輸入英文單字" autocomplete="off" autocapitalize="none">
             <input type="text" id="ansPos" class="q-input-pos" placeholder="詞性" autocomplete="off" autocapitalize="none">
         </div>
-        <div id="feedback" style="min-height:30px; margin:15px 0;"></div>
+
+        <div id="feedback"></div>
+
         <div id="correctBox" class="correct-answer-box">
-            <div id="actualAns" style="font-size:1.4rem; color:white; margin-bottom:15px;"></div>
-            <button onclick="nextQuestion()" style="background:var(--danger); border:none; color:white; width:100%; padding:15px;">我背好了</button>
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; font-size: 1.1rem;">答錯了，我們一起背：</div>
+            <div id="actualAns" class="ans-text"></div>
+            <button onclick="speakText(qState.words[qState.idx].en)" class="btn-speak" style="width: auto; margin-bottom: 20px;">🔊 聽發音</button>
+            <button onclick="nextQuestion()" style="background-color:var(--primary); width:100%;">背好了，下一題</button>
         </div>
-        <button id="submitBtn" onclick="checkAnswer()" style="width:100%; font-size:1.2rem; padding:15px;">送出 (Enter)</button>
+        
+        <button id="submitBtn" onclick="checkAnswer()" style="width:100%; font-size:1.3rem;">送出答案 (Enter)</button>
     </div>
-    <div id="resultUI" style="display:none; text-align:center; width:100%; max-width:600px;">
-        <h1 style="color:var(--tech-blue)">測驗結束 📊</h1>
-        <div id="resSummary" style="margin-bottom:20px;"></div>
-        <div id="wrongItems" style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; max-height: 50vh; overflow-y: auto;"></div>
-        <button onclick="exitQuiz()" style="margin-top:30px; width:100%;">返回</button>
+
+    <div id="resultUI" class="result-card" style="display:none;">
+        <h1 style="color:var(--primary-dark)">太棒了！挑戰完成 🎉</h1>
+        <div style="margin-bottom:20px;">
+            <div>正確率：</div>
+            <div class="res-big" id="resRate">0%</div>
+        </div>
+        <div id="wrongListArea" style="display:none;">
+            <h3 style="text-align:left; color:var(--accent);">以下單字需要再多練習：</h3>
+            <div class="wrong-items" id="wrongItems"></div>
+        </div>
+        <button onclick="exitQuiz()" style="margin-top:30px; width:100%;">返回單元列表</button>
     </div>
+
+    <button id="exitBtn" onclick="exitQuiz()" style="margin-top:40px; background:none; border:none; color:#888;">結束挑戰</button>
 </div>
 
 <script>
-// --- [請在此處貼入你的 Firebase Config] ---
+// --- [請注意：此處保留你的原 Firebase Config] ---
 const firebaseConfig = {
     apiKey: "AIzaSyDFi2cajmGW9jr7dLgdV00GE0WdDkYT7Kw",
   authDomain: "my-vocab-c69f4.firebaseapp.com",
@@ -109,46 +262,51 @@ const MY_SYNC_PASSWORD = "1234"; // 你的同步密碼
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-let units = JSON.parse(localStorage.getItem("forest_v14_data") || "[]");
+let units = JSON.parse(localStorage.getItem("forest_v15_data") || "[]");
 let activeIndex = null;
 let qState = { words: [], idx: 0, wrongWords: [] };
 
+// 開啟語音功能 (小孩版預設發音清楚)
 function speakText(text) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 0.85;
+    utterance.rate = 0.8; // 語速稍微放慢，聽更清楚
+    utterance.pitch = 1.1; // 音調稍微提高，更活潑
     window.speechSynthesis.speak(utterance);
 }
 
 async function loadFromCloud() {
     try {
+        document.getElementById('cloudStatus').innerText = "☁️ 雲端連線中...";
         const snapshot = await db.collection("vocab_units").get();
         const cloudUnits = []; snapshot.forEach(doc => cloudUnits.push(doc.data()));
         if (cloudUnits.length > 0) { 
             units = cloudUnits; 
-            localStorage.setItem("forest_v14_data", JSON.stringify(units)); 
+            localStorage.setItem("forest_v15_data", JSON.stringify(units)); 
             renderUnits(); 
         }
-        document.getElementById('cloudStatus').innerText = "☁️ 雲端已連線";
+        document.getElementById('cloudStatus').innerText = "☁️ 雲端已同步";
     } catch (e) { document.getElementById('cloudStatus').innerText = "☁️ 離線模式"; }
 }
 
 async function saveToCloud() {
     if (activeIndex === null) return;
-    const password = prompt("輸入同步密碼：");
+    const password = prompt("請輸入同步密碼：");
     if (password !== MY_SYNC_PASSWORD) return alert("密碼錯誤");
 
     const unit = units[activeIndex];
     document.getElementById('cloudStatus').innerText = "⏳ 同步中...";
     try {
         await db.collection("vocab_units").doc(unit.name).set(unit);
-        localStorage.setItem("forest_v14_data", JSON.stringify(units));
+        localStorage.setItem("forest_v15_data", JSON.stringify(units));
         document.getElementById('cloudStatus').innerText = "✅ 雲端已同步";
+        alert("儲存成功！");
     } catch (e) { alert("失敗"); }
 }
 
+// 解析邏輯 (v12 修正版)
 function parseTextLogic(text) {
     const words = [];
     text.split('\n').forEach(line => {
@@ -173,56 +331,107 @@ function runManualParse() {
     units.push({ name, words: parseTextLogic(text) });
     renderUnits();
     document.getElementById('manualText').value = "";
+    activeIndex = units.length - 1;
+    saveToCloud(); // 匯入後自動存雲端
 }
 
 function renderUnits() {
-    document.getElementById('unitList').innerHTML = units.map((u, i) => `<div class="unit-item"><span onclick="openUnit(${i})" style="cursor:pointer">🌿 <strong>${u.name}</strong> (${u.words.length})</span><button class="danger" onclick="deleteUnit('${u.name}', ${i})">🗑️</button></div>`).join('');
+    // 渲染兩個列表：測驗選擇列表 & 家長管理列表
+    const listHtml = units.map((u, i) => `<div class="unit-item" onclick="startQuiz(${i})"><span class="unit-title">📘 ${u.name}</span><span class="unit-count">(${u.words.length} 字)</span></div>`).join('');
+    document.getElementById('quizList').innerHTML = listHtml;
 }
 
-function openUnit(i) { activeIndex = i; document.getElementById('mainEditor').style.display = 'block'; document.getElementById('currentUnitTitle').innerText = units[i].name; renderTable(); window.scrollTo(0, document.getElementById('mainEditor').offsetTop - 20); }
+// 開啟編輯器
+function openUnitEditor(i) {
+    activeIndex = i;
+    document.getElementById('mainEditor').style.display = 'block';
+    document.getElementById('currentUnitTitle').innerText = `正在編輯：${units[i].name}`;
+    renderEditorTable();
+}
 
-function renderTable() {
+function closeEditor() { document.getElementById('mainEditor').style.display = 'none'; activeIndex = null; }
+
+// 編輯清單：手機版改為卡片式呈現
+function renderEditorTable() {
     document.getElementById('wordTable').innerHTML = units[activeIndex].words.map((w, j) => `
-        <tr>
-            <td data-label="英文單字">
+        <div class="word-card card">
+            <div class="word-row">
                 <input type="text" value="${w.en}" onchange="units[activeIndex].words[${j}].en=this.value">
                 <button class="btn-speak" onclick="speakText(units[activeIndex].words[${j}].en)">🔊</button>
-            </td>
-            <td data-label="詞性">
-                <input type="text" value="${w.pos}" onchange="units[activeIndex].words[${j}].pos=this.value">
-            </td>
-            <td data-label="中文翻譯">
-                <input type="text" value="${w.zh}" onchange="units[activeIndex].words[${j}].zh=this.value">
-            </td>
-            <td class="btn-del-cell">
-                <button class="danger" onclick="units[activeIndex].words.splice(${j},1);renderTable();" style="padding: 5px 10px;">刪除此行</button>
-            </td>
-        </tr>
+            </div>
+            <input type="text" value="${w.pos}" onchange="units[activeIndex].words[${j}].pos=this.value" style="font-size:0.9rem; color:#888;">
+            <input type="text" value="${w.zh}" onchange="units[activeIndex].words[${j}].zh=this.value">
+            <div style="text-align:right; margin-top:10px;"><button class="danger" onclick="units[activeIndex].words.splice(${j},1);renderEditorTable();" style="width: auto; padding: 5px 15px; font-size:0.9rem;">🗑️ 刪除</button></div>
+        </div>
     `).join('');
 }
 
 async function deleteUnit(name, i) {
-    if(prompt("請輸入密碼：") !== MY_SYNC_PASSWORD) return;
-    if(confirm("確定刪除？")) {
-        try { await db.collection("vocab_units").doc(name).delete(); } catch(e) {}
-        units.splice(i,1); localStorage.setItem("forest_v14_data", JSON.stringify(units)); renderUnits(); document.getElementById('mainEditor').style.display='none';
-    }
+    if(prompt("此動作無法復原！請輸入密碼以刪除單元：") !== MY_SYNC_PASSWORD) return alert("密碼錯誤");
+    try { await db.collection("vocab_units").doc(name).delete(); } catch(e) {}
+    units.splice(i,1); localStorage.setItem("forest_v15_data", JSON.stringify(units)); renderUnits(); document.getElementById('mainEditor').style.display='none';
+}
+
+function toggleAdmin() {
+    const area = document.getElementById('adminArea');
+    const btn = document.getElementById('toggleAdminBtn');
+    if(area.style.display === 'none' || area.style.display === '') {
+        const password = prompt("這是家長功能，請輸入密碼：");
+        if(password === MY_SYNC_PASSWORD) { area.style.display = 'block'; btn.innerText = "⚙️ 關閉管理模式"; }
+        else { alert("密碼錯誤！"); }
+    } else { area.style.display = 'none'; btn.innerText = "⚙️ 管理模式 (家長用)"; }
 }
 
 // 測驗部分同步調整手機字體
-function startQuiz() { qState.words = [...units[activeIndex].words].sort(() => Math.random() - 0.5); qState.idx = 0; qState.wrongWords = []; document.getElementById('studyArea').style.display = 'flex'; document.getElementById('quizUI').style.display = 'block'; document.getElementById('resultUI').style.display = 'none'; showQuestion(); }
-function showQuestion() { const w = qState.words[qState.idx]; document.getElementById('quizProgress').innerText = `${qState.idx + 1} / ${qState.words.length}`; document.getElementById('quizZh').innerText = w.zh; document.getElementById('ansEn').value = ""; document.getElementById('ansPos').value = ""; document.getElementById('feedback').innerText = ""; document.getElementById('correctBox').style.display = 'none'; document.getElementById('inputArea').style.display = 'flex'; document.getElementById('submitBtn').style.display = 'block'; }
+function startQuiz(i) {
+    activeIndex = i;
+    qState.words = [...units[activeIndex].words].sort(() => Math.random() - 0.5);
+    qState.idx = 0; qState.wrongWords = [];
+    document.getElementById('studyArea').style.display = 'flex';
+    document.getElementById('quizUI').style.display = 'block';
+    document.getElementById('resultUI').style.display = 'none';
+    showQuestion();
+}
+
+function showQuestion() {
+    const w = qState.words[qState.idx];
+    document.getElementById('quizProgress').innerText = `題目：${qState.idx + 1} / ${qState.words.length}`;
+    document.getElementById('quizZh').innerText = w.zh;
+    document.getElementById('ansEn').value = "";
+    document.getElementById('ansPos').value = "";
+    document.getElementById('feedback').innerText = "";
+    document.getElementById('correctBox').style.display = 'none';
+    document.getElementById('inputArea').style.display = 'flex';
+    document.getElementById('submitBtn').style.display = 'block';
+    // 手機端預設不自動聚焦，避免鍵盤突然彈出嚇到小孩，需要時手動點擊
+    if(window.innerWidth > 600) document.getElementById('ansEn').focus(); 
+}
+
 function checkAnswer() {
     const w = qState.words[qState.idx];
     if (document.getElementById('ansEn').value.trim().toLowerCase() === w.en.toLowerCase() && document.getElementById('ansPos').value.trim().toLowerCase() === w.pos.toLowerCase()) {
-        speakText(w.en); document.getElementById('feedback').innerHTML = "<span style='color:var(--tech-neon)'>Correct!</span>"; setTimeout(nextQuestion, 800);
+        speakText(w.en); document.getElementById('feedback').innerHTML = "<span style='color:var(--secondary); font-size:2rem;'>✓ 答對了！你超棒！</span>"; setTimeout(nextQuestion, 1000);
     } else {
-        qState.wrongWords.push(w); document.getElementById('inputArea').style.display = 'none'; document.getElementById('submitBtn').style.display = 'none'; document.getElementById('correctBox').style.display = 'block'; document.getElementById('actualAns').innerHTML = `正確答案：<br><strong>${w.en}</strong> [${w.pos}]`; speakText(w.en);
+        qState.wrongWords.push(w); document.getElementById('inputArea').style.display = 'none'; document.getElementById('submitBtn').style.display = 'none'; document.getElementById('correctBox').style.display = 'block'; document.getElementById('actualAns').innerHTML = `<strong>${w.en}</strong> [${w.pos}]`; speakText(w.en); // 答錯也發音
     }
 }
+
 function nextQuestion() { qState.idx++; if (qState.idx >= qState.words.length) showFinalResult(); else showQuestion(); }
-function showFinalResult() { document.getElementById('quizUI').style.display = 'none'; document.getElementById('resultUI').style.display = 'block'; const total = qState.words.length; const wrong = qState.wrongWords.length; document.getElementById('resSummary').innerHTML = `<div style="font-size:1.5rem; color:var(--tech-neon)">${Math.round(((total-wrong)/total)*100)}%</div>`; document.getElementById('wrongItems').innerHTML = qState.wrongWords.map(w => `<div style='margin:10px 0;'>${w.en} [${w.pos}] - ${w.zh}</div>`).join(''); }
-function exitQuiz() { document.getElementById('studyArea').style.display = 'none'; }
+
+function showFinalResult() {
+    document.getElementById('quizUI').style.display = 'none';
+    document.getElementById('resultUI').style.display = 'block';
+    const total = qState.words.length; const wrong = qState.wrongWords.length;
+    document.getElementById('resRate').innerText = `${Math.round(((total-wrong)/total)*100)}%`;
+    if (wrong > 0) {
+        document.getElementById('wrongListArea').style.display = 'block';
+        document.getElementById('wrongItems').innerHTML = qState.wrongWords.map(w => `<div style='margin:10px 0;'><strong>${w.en}</strong> [${w.pos}] - ${w.zh} <button class="btn-speak" onclick="speakText('${w.en.replace(/'/g, "\\'")}')" style="width:30px; height:30px; font-size:0.8rem;">🔊</button></div>`).join('');
+    } else {
+        document.getElementById('wrongListArea').style.display = 'none';
+    }
+}
+
+function exitQuiz() { document.getElementById('studyArea').style.display = 'none'; activeIndex = null; }
 document.addEventListener('keypress', (e) => { if (e.key === 'Enter' && document.getElementById('studyArea').style.display === 'flex') { if (document.getElementById('correctBox').style.display === 'block') nextQuestion(); else if (document.getElementById('resultUI').style.display === 'none') checkAnswer(); } });
 
 loadFromCloud();
